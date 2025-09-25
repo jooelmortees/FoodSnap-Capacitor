@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FoodSnap</string>
+    <string name="title_activity_main">FoodSnap</string>
+    <string name="package_name">com.jooelmortees.app</string>
+    <string name="custom_url_scheme">com.jooelmortees.app</string>
+</resources>
