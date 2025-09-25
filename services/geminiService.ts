@@ -6,7 +6,7 @@ if (!process.env.API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-const textModel = 'gemini-2.5-flash-preview-04-17';
+const textModel = 'gemini-1.5-flash';
 
 /**
  * Creates a URL for an image from pollinations.ai based on a rich recipe description.
@@ -138,14 +138,22 @@ export const identifyIngredientsFromImage = async (imageDataUrl: string): Promis
   };
 
   const textPart = {
-    text: `Analiza esta imagen de una nevera, despensa o ingredientes. Identifica todos los alimentos visibles.
+    text: `INSTRUCCIONES CRÍTICAS: Tu respuesta DEBE ser ÚNICAMENTE un array JSON válido. NO incluyas texto explicativo, comentarios, saludo, despedida, ni NADA fuera del JSON.
+
+Analiza esta imagen de una nevera, despensa o ingredientes. Identifica todos los alimentos visibles.
 Para cada alimento, proporciona su nombre, una cantidad aproximada (ej: "2 unidades", "medio manojo", "200g", "1 paquete"), y su estado general si es discernible (ej: "fresco", "cocido", "envasado").
 Si la cantidad o el estado no son claros, usa "desconocido" o omite el campo estado.
-Devuelve esta información como un array JSON de objetos. Cada objeto debe tener las claves "name" (string), "quantity" (string), y opcionalmente "state" (string).
+
+FORMATO REQUERIDO: Array JSON de objetos. Cada objeto debe tener las claves "name" (string), "quantity" (string), y opcionalmente "state" (string).
 Ejemplo de formato esperado: [{"name": "Manzana", "quantity": "3 unidades", "state": "fresco"}, {"name": "Leche", "quantity": "1 litro", "state": "envasado"}]
-CRÍTICO: La respuesta debe ser ÚNICAMENTE el array JSON válido y completo. NO incluyas NINGÚN texto explicativo, comentarios, ni caracteres extraños FUERA O DENTRO del JSON.
-ES ESPECIALMENTE IMPORTANTE que dentro de cada objeto JSON y entre los objetos del array, solo exista la sintaxis JSON correcta. NO insertes palabras o texto suelto que no pertenezcan a los valores de las claves JSON.
-Verifica que el JSON sea parseable antes de devolverlo. Asegúrate de que todos los nombres de los ingredientes ("name") estén en español. Si no puedes identificar ningún alimento claramente, devuelve un array JSON vacío: [].`,
+
+REGLAS ESTRICTAS:
+1. SOLO devuelve el array JSON, sin texto adicional
+2. Nombres de ingredientes en español
+3. Si no identificas alimentos, devuelve: []
+4. Verifica que el JSON sea válido antes de responder
+
+RESPUESTA ESPERADA: [{"name": "...", "quantity": "...", "state": "..."}] o []`,
   };
 
   try {
@@ -206,16 +214,19 @@ export const suggestRecipes = async (ingredients: Ingredient[], preferences: Use
   }
 
   const prompt = `
-  IMPORTANTE: Toda la respuesta y todo el texto dentro del JSON (títulos, descripciones, instrucciones, etiquetas, etc.) DEBE estar en español.
+  INSTRUCCIONES CRÍTICAS PARA LA RESPUESTA:
+  1. Tu respuesta DEBE ser ÚNICAMENTE un array JSON válido de recetas
+  2. NO incluyas texto explicativo, comentarios, saludo, despedida, ni NADA fuera del JSON
+  3. TODO el texto dentro del JSON (títulos, descripciones, instrucciones, etiquetas, etc.) DEBE estar en español
+  4. Verifica que el JSON sea parseable antes de responder
 
   Dados los siguientes ingredientes disponibles: ${ingredientListString}.
 
-  Por favor, sugiere como mínimo 6 recetas diversas que se puedan preparar con una combinación de estos ingredientes.
-  Para cada receta, proporciona la siguiente información en formato JSON. La respuesta DEBE ser un array JSON de objetos de receta, y nada más.
+  Sugiere como mínimo 6 recetas diversas que se puedan preparar con una combinación de estos ingredientes.
 
   NOTA ESPECIAL SOBRE RECETAS DE TORTILLA: Solo puedes sugerir una receta que sea una "tortilla" (ej: "Tortilla de Patatas") si "huevos" está explícitamente en la lista de ingredientes disponibles. Si no hay huevos, NO sugieras tortillas. Si sugieres una tortilla, en su campo "description" es IMPERATIVO que NO menciones la palabra "huevos"; en su lugar, enfócate en cómo se usan los OTROS ingredientes de la lista del usuario (ejemplo: "Una jugosa tortilla que aprovecha tus patatas y cebolla..."). Para las demás recetas, la descripción debe seguir la regla general.
 
-  Cada objeto de receta debe tener la siguiente estructura EXACTA y COMPLETA. Presta MÁXIMA ATENCIÓN a los nombres de los campos y a la sintaxis JSON, incluyendo las COMAS entre campos y elementos de arrays.
+  ESTRUCTURA JSON REQUERIDA para cada receta:
   {
     "title": "Nombre del Plato (string)",
     "description": "Una breve descripción del plato y por qué es una buena opción. CRÍTICO: La descripción DEBE especificar claramente los ingredientes principales de la lista del usuario que se utilizan en esta receta (ej: 'Este plato aprovecha tus tomates frescos, la cebolla y los pimientos...').",
@@ -252,11 +263,10 @@ export const suggestRecipes = async (ingredients: Ingredient[], preferences: Use
   ${dietaryInstruction}
 
   Prioriza recetas que utilicen una buena porción de los ingredientes proporcionados.
-  REVISIÓN FINAL CRÍTICA: Antes de dar tu respuesta, verifica que:
-  1. La respuesta es un array JSON y NADA MÁS.
-  2. La sintaxis JSON es perfecta (comas, corchetes, llaves).
-  3. Cada receta tiene TODOS los campos requeridos en la estructura.
-  4. El campo de los pasos se llama "instructions".
+  
+  FORMATO DE RESPUESTA FINAL: [{"title": "...", "description": "...", ...}, {"title": "...", "description": "...", ...}]
+  
+  RECORDATORIO FINAL: SOLO devuelve el array JSON de recetas, sin texto adicional.
   `;
 
   try {
