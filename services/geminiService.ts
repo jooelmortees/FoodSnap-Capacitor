@@ -138,10 +138,10 @@ export const identifyIngredientsFromImage = async (imageDataUrl: string): Promis
   };
 
   const textPart = {
-    text: `INSTRUCCIONES CRÍTICAS: Tu respuesta DEBE ser ÚNICAMENTE un array JSON válido. NO incluyas texto explicativo, comentarios, saludo, despedida, ni NADA fuera del JSON.
+    text: `INSTRUCCIONES CRÍTICAS: Tu respuesta DEBE ser ÚNICAMENTE un array JSON válido. NO incluyas texto explicativo, comentarios, saludo, despedida, ni NADA fuera del JSON. RESPONDE SIEMPRE EN ESPAÑOL DE ESPAÑA.
 
 Analiza esta imagen de una nevera, despensa o ingredientes. Identifica todos los alimentos visibles.
-Para cada alimento, proporciona su nombre, una cantidad aproximada (ej: "2 unidades", "medio manojo", "200g", "1 paquete"), y su estado general si es discernible (ej: "fresco", "cocido", "envasado").
+Para cada alimento, proporciona su nombre, una cantidad aproximada (ej: "2 unidades", "medio manojo", "200 g", "1 paquete"), y su estado general si es discernible (ej: "fresco", "cocido", "envasado").
 Si la cantidad o el estado no son claros, usa "desconocido" o omite el campo estado.
 
 FORMATO REQUERIDO: Array JSON de objetos. Cada objeto debe tener las claves "name" (string), "quantity" (string), y opcionalmente "state" (string).
@@ -149,11 +149,14 @@ Ejemplo de formato esperado: [{"name": "Manzana", "quantity": "3 unidades", "sta
 
 REGLAS ESTRICTAS:
 1. SOLO devuelve el array JSON, sin texto adicional
-2. Nombres de ingredientes en español
+2. Nombres de ingredientes en ESPAÑOL DE ESPAÑA (ej: "patatas" no "papas", "judías" no "frijoles")
 3. Si no identificas alimentos, devuelve: []
 4. Verifica que el JSON sea válido antes de responder
+5. NUNCA incluyas explicaciones, comentarios o texto fuera del JSON
 
-RESPUESTA ESPERADA: [{"name": "...", "quantity": "...", "state": "..."}] o []`,
+RESPUESTA ESPERADA: [{"name": "...", "quantity": "...", "state": "..."}] o []
+
+RECORDATORIO FINAL: RESPONDE ÚNICAMENTE CON EL ARRAY JSON EN ESPAÑOL DE ESPAÑA.`,
   };
 
   try {
@@ -217,40 +220,42 @@ export const suggestRecipes = async (ingredients: Ingredient[], preferences: Use
   INSTRUCCIONES CRÍTICAS PARA LA RESPUESTA:
   1. Tu respuesta DEBE ser ÚNICAMENTE un array JSON válido de recetas
   2. NO incluyas texto explicativo, comentarios, saludo, despedida, ni NADA fuera del JSON
-  3. TODO el texto dentro del JSON (títulos, descripciones, instrucciones, etiquetas, etc.) DEBE estar en español
-  4. Verifica que el JSON sea parseable antes de responder
+  3. TODO el texto dentro del JSON (títulos, descripciones, instrucciones, etiquetas, etc.) DEBE estar en ESPAÑOL DE ESPAÑA
+  4. Usa vocabulario español peninsular: "patatas" (no papas), "judías" (no frijoles), "pimiento" (no chile), "zumo" (no jugo), etc.
+  5. Verifica que el JSON sea parseable antes de responder
+  6. NUNCA incluyas explicaciones adicionales fuera del JSON
 
   Dados los siguientes ingredientes disponibles: ${ingredientListString}.
 
   Sugiere como mínimo 6 recetas diversas que se puedan preparar con una combinación de estos ingredientes.
 
-  NOTA ESPECIAL SOBRE RECETAS DE TORTILLA: Solo puedes sugerir una receta que sea una "tortilla" (ej: "Tortilla de Patatas") si "huevos" está explícitamente en la lista de ingredientes disponibles. Si no hay huevos, NO sugieras tortillas. Si sugieres una tortilla, en su campo "description" es IMPERATIVO que NO menciones la palabra "huevos"; en su lugar, enfócate en cómo se usan los OTROS ingredientes de la lista del usuario (ejemplo: "Una jugosa tortilla que aprovecha tus patatas y cebolla..."). Para las demás recetas, la descripción debe seguir la regla general.
+  NOTA ESPECIAL SOBRE RECETAS DE TORTILLA: Solo puedes sugerir una receta que sea una "tortilla" (ej: "Tortilla de Patatas") si "huevos" está explícitamente en la lista de ingredientes disponibles. Si no hay huevos, NO sugieras tortillas. Si sugieres una tortilla, en su campo "description" es IMPERATIVO que NO menciones la palabra "huevos"; en su lugar, enfócate en cómo se usan los OTROS ingredientes de la lista del usuario (ejemplo: "Una jugosa tortilla que aprovecha vuestras patatas y cebolla..."). Para las demás recetas, la descripción debe seguir la regla general.
 
   ESTRUCTURA JSON REQUERIDA para cada receta:
   {
-    "title": "Nombre del Plato (string)",
-    "description": "Una breve descripción del plato y por qué es una buena opción. CRÍTICO: La descripción DEBE especificar claramente los ingredientes principales de la lista del usuario que se utilizan en esta receta (ej: 'Este plato aprovecha tus tomates frescos, la cebolla y los pimientos...').",
-    "prepTime": "Tiempo de preparación estimado (ej: '15 minutos', string)",
-    "cookTime": "Tiempo de cocción estimado (ej: '30 minutos', string)",
+    "title": "Nombre del Plato en español de España (string)",
+    "description": "Una breve descripción del plato y por qué es una buena opción en español de España. CRÍTICO: La descripción DEBE especificar claramente los ingredientes principales de la lista del usuario que se utilizan en esta receta (ej: 'Este plato aprovecha vuestros tomates frescos, la cebolla y los pimientos...').",
+    "prepTime": "Tiempo de preparación estimado en español de España (ej: '15 minutos', string)",
+    "cookTime": "Tiempo de cocción estimado en español de España (ej: '30 minutos', string)",
     "servings": "Número de porciones (number)",
     "ingredients": [
-      { "name": "Nombre del ingrediente", "quantity": "Cantidad", "unit": "Unidad (ej: 'g', 'ml', 'taza', 'cucharadita', 'unidad')" }
+      { "name": "Nombre del ingrediente en español de España", "quantity": "Cantidad", "unit": "Unidad en español de España (ej: 'g', 'ml', 'taza', 'cucharadita', 'unidad')" }
     ],
     "instructions": [
-      "Paso 1 de la instrucción...",
-      "Paso 2 de la instrucción..."
+      "Paso 1 de la instrucción en español de España...",
+      "Paso 2 de la instrucción en español de España..."
     ],
-    "dietaryTags": ["Array de strings con etiquetas dietéticas relevantes (ej: 'vegano', 'sin gluten', 'bajo en carbohidratos') si aplica, o array vacío [] si ninguna"],
+    "dietaryTags": ["Array de strings con etiquetas dietéticas relevantes en español de España (ej: 'vegano', 'sin gluten', 'bajo en hidratos de carbono') si aplica, o array vacío [] si ninguna"],
     "estimatedNutrition": {
       "calories": "ej: '500 kcal'",
       "protein": "ej: '30g'",
-      "carbs": "ej: '50g'",
+      "carbs": "ej: '50 g'",
       "fat": "ej: '20g'"
     },
     "possibleSubstitutions": [
-        {"originalIngredient": "Ingrediente original en la receta", "suggestion": "Sugerencia de sustitución o nota"}
+        {"originalIngredient": "Ingrediente original en la receta en español de España", "suggestion": "Sugerencia de sustitución o nota en español de España"}
     ],
-    "imageQuery": "Proporciona aquí una frase MUY DESCRIPTIVA y ESPECÍFICA del plato nombrado en 'title'. Esta frase se usará para buscar una imagen si la generación de IA falla. Ejemplo: si title es 'Pastel de Chocolate con Fresas', imageQuery podría ser 'delicioso pastel de chocolate esponjoso con fresas frescas y crema'. NO uses términos genéricos como 'pastel' o 'comida'."
+    "imageQuery": "Proporciona aquí una frase MUY DESCRIPTIVA y ESPECÍFICA del plato nombrado en 'title' en español de España. Esta frase se usará para buscar una imagen si la generación de IA falla. Ejemplo: si title es 'Bizcocho de Chocolate con Fresas', imageQuery podría ser 'delicioso bizcocho de chocolate esponjoso con fresas frescas y nata'. NO uses términos genéricos como 'bizcocho' o 'comida'."
   }
 
   ${servingsInstruction}
@@ -264,9 +269,9 @@ export const suggestRecipes = async (ingredients: Ingredient[], preferences: Use
 
   Prioriza recetas que utilicen una buena porción de los ingredientes proporcionados.
   
-  FORMATO DE RESPUESTA FINAL: [{"title": "...", "description": "...", ...}, {"title": "...", "description": "...", ...}]
+  FORMATO DE RESPUESTA FINAL EN ESPAÑOL DE ESPAÑA: [{"title": "...", "description": "...", ...}, {"title": "...", "description": "...", ...}]
   
-  RECORDATORIO FINAL: SOLO devuelve el array JSON de recetas, sin texto adicional.
+  RECORDATORIO FINAL: SOLO devuelve el array JSON de recetas en ESPAÑOL DE ESPAÑA, sin texto adicional, explicaciones o comentarios.
   `;
 
   try {
